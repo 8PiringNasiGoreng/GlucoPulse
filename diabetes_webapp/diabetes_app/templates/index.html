@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DiabetesAI — Prediksi Cerdas</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --warm-earth: #918b6b;
+        --olive-dark: #5e5e3a;
+        --olive-light: #9b9b6f;
+        --cream: #f5f2ec;
+        --cream-dark: #ede9e0;
+        --white: #ffffff;
+        --text-dark: #2b2b1f;
+        --text-mid: #6b6b55;
+        --text-light: #a0a085;
+        --border: #d6d2c4;
+        --accent: #c9a96e;
+
+        /* Extended palette (same family) */
+        --sand: #e8e0cc;
+        --sand-deep: #d4c9a8;
+        --moss: #7a7a52;
+        --moss-light: #b4b48a;
+        --sienna: #b87240;
+        --sienna-soft: #d9966b;
+        --parchment: #faf8f3;
+        --ink: #1e1e14;
+        --success: #6a8a5a;
+        --success-bg: #edf2e8;
+        --danger: #a0522d;
+        --danger-bg: #f5ede6;
+        --warn: #c9a030;
+
+        --radius: 14px;
+        --radius-sm: 8px;
+        --shadow-sm: 0 2px 8px rgba(43, 43, 31, 0.06);
+        --shadow-md: 0 4px 20px rgba(43, 43, 31, 0.1);
+        --shadow-lg: 0 8px 40px rgba(43, 43, 31, 0.14);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--parchment);
+        color: var(--text-dark);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── TEXTURE OVERLAY ── */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            ellipse 900px 600px at 15% 10%,
+            rgba(201, 169, 110, 0.09) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 700px 500px at 85% 80%,
+            rgba(145, 139, 107, 0.08) 0%,
+            transparent 55%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── LAYOUT ── */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 28px 100px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── HEADER ── */
+      header {
+        padding: 52px 0 44px;
+        position: relative;
+        z-index: 1;
+      }
+      .header-inner {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        animation: fadeUp 0.5s ease both;
+      }
+
+      .header-left {
+      }
+      .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--cream-dark);
+        border: 1px solid var(--border);
+        color: var(--warm-earth);
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        padding: 5px 14px;
+        border-radius: 100px;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+      }
+      .header-badge::before {
+        content: '●';
+        color: var(--accent);
+        animation: blink 1.6s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.25;
+        }
+      }
+
+      h1 {
+        font-family: 'DM Serif Display', serif;
+        font-size: clamp(2rem, 4.5vw, 3.4rem);
+        font-weight: 400;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--text-dark);
+      }
+      h1 em {
+        font-style: italic;
+        color: var(--olive-dark);
+      }
+      .header-sub {
+        margin-top: 10px;
+        color: var(--text-mid);
+        font-size: 0.93rem;
+        font-weight: 300;
+      }
+
+      /* ── DATASET MODE TOGGLE ── */
+      .mode-toggle-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        animation: fadeUp 0.5s 0.1s ease both;
+      }
+      .mode-label {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--text-light);
+        font-family: 'DM Mono', monospace;
+      }
+      .mode-toggle {
+        display: flex;
+        background: var(--cream-dark);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 4px;
+        gap: 4px;
+      }
+      .mode-btn {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 8px 20px;
+        border-radius: 100px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        color: var(--text-mid);
+        background: transparent;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+      .mode-btn .mode-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--border);
+        transition: background 0.25s;
+      }
+      .mode-btn.active {
+        background: var(--white);
+        color: var(--text-dark);
+        box-shadow: var(--shadow-sm);
+      }
+      .mode-btn.active .mode-dot {
+        background: var(--accent);
+      }
+      .mode-btn:hover:not(.active) {
+        color: var(--text-dark);
+      }
+
+      .mode-badge {
+        font-size: 10px;
+        font-family: 'DM Mono', monospace;
+        letter-spacing: 0.5px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        line-height: 1.5;
+      }
+      .mode-badge.v1 {
+        background: rgba(201, 169, 110, 0.15);
+        color: var(--accent);
+      }
+      .mode-badge.v2 {
+        background: rgba(94, 94, 58, 0.12);
+        color: var(--olive-dark);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ── DATASET INFO STRIP ── */
+      .dataset-strip {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-radius: var(--radius-sm);
+        background: var(--cream-dark);
+        border: 1px solid var(--border);
+        margin-bottom: 24px;
+        font-size: 12px;
+        color: var(--text-mid);
+        animation: fadeUp 0.4s ease both;
+      }
+      .dataset-strip strong {
+        color: var(--text-dark);
+      }
+      .ds-sep {
+        color: var(--border);
+      }
+
+      /* ── TWO-COLUMN LAYOUT ── */
+      .grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 370px;
+        gap: 22px;
+        animation: fadeUp 0.5s 0.2s ease both;
+      }
+      @media (max-width: 900px) {
+        .grid-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--cream);
+      }
+      .card-header-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-sm);
+        background: var(--cream-dark);
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        font-size: 15px;
+        flex-shrink: 0;
+      }
+      .card-header h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .card-header span {
+        font-size: 11px;
+        color: var(--text-light);
+        margin-top: 1px;
+        display: block;
+      }
+      .card-body {
+        padding: 22px;
+      }
+
+      /* ── MODEL SELECTOR ── */
+      .model-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      @media (max-width: 600px) {
+        .model-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .model-btn {
+        background: var(--cream);
+        border: 1px solid var(--border);
+        color: var(--text-mid);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 10px 6px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s ease;
+        line-height: 1.3;
+      }
+      .model-btn:hover {
+        border-color: var(--warm-earth);
+        color: var(--text-dark);
+        background: var(--cream-dark);
+      }
+      .model-btn.active {
+        background: var(--white);
+        border-color: var(--accent);
+        color: var(--text-dark);
+        box-shadow:
+          0 0 0 2px rgba(201, 169, 110, 0.18),
+          var(--shadow-sm);
+      }
+      .model-btn .model-score {
+        display: block;
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 4px;
+        color: var(--accent);
+      }
+      .model-btn.active .model-score {
+        color: var(--olive-dark);
+      }
+
+      /* ── FORM ── */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 560px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .form-group label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-mid);
+      }
+      .form-group .unit-label {
+        font-size: 10px;
+        color: var(--text-light);
+        font-weight: 400;
+      }
+      .form-group input[type='number'] {
+        width: 100%;
+        background: var(--cream);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-dark);
+        font-family: 'DM Mono', monospace;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 14px;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        -moz-appearance: textfield;
+      }
+      .form-group input[type='number']::-webkit-inner-spin-button {
+        display: none;
+      }
+      .form-group input[type='number']:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.15);
+        background: var(--white);
+      }
+
+      /* v2 has an extra select for gender */
+      .form-group select {
+        width: 100%;
+        background: var(--cream);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-dark);
+        font-family: 'DM Mono', monospace;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 14px;
+        outline: none;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a0a085' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+      }
+      .form-group select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.15);
+        background-color: var(--white);
+      }
+
+      /* ── PREDICT BUTTON ── */
+      .btn-predict {
+        width: 100%;
+        margin-top: 20px;
+        background: var(--olive-dark);
+        border: none;
+        border-radius: var(--radius-sm);
+        color: var(--cream);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 14px;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 12px rgba(94, 94, 58, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-predict::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.06) 0%,
+          transparent 100%
+        );
+      }
+      .btn-predict:hover {
+        background: var(--moss);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(94, 94, 58, 0.3);
+      }
+      .btn-predict:active {
+        transform: translateY(0);
+      }
+      .btn-predict:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ── RESULT CARD ── */
+      .result-section {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .result-display {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px 22px;
+        text-align: center;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.4s ease;
+        box-shadow: var(--shadow-sm);
+      }
+      .result-display.diabetes {
+        border-color: rgba(160, 82, 45, 0.3);
+        background: linear-gradient(
+          160deg,
+          var(--danger-bg) 0%,
+          var(--white) 60%
+        );
+        box-shadow: 0 4px 24px rgba(160, 82, 45, 0.1);
+      }
+      .result-display.healthy {
+        border-color: rgba(106, 138, 90, 0.3);
+        background: linear-gradient(
+          160deg,
+          var(--success-bg) 0%,
+          var(--white) 60%
+        );
+        box-shadow: 0 4px 24px rgba(106, 138, 90, 0.1);
+      }
+
+      .result-icon {
+        font-size: 44px;
+        line-height: 1;
+      }
+      .result-label {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.6rem;
+        font-weight: 400;
+      }
+      .result-label.red {
+        color: var(--danger);
+      }
+      .result-label.green {
+        color: var(--success);
+      }
+
+      .prob-bar-wrap {
+        width: 100%;
+        background: var(--cream-dark);
+        border-radius: 100px;
+        height: 7px;
+        overflow: hidden;
+      }
+      .prob-bar {
+        height: 100%;
+        border-radius: 100px;
+        transition: width 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: linear-gradient(90deg, var(--accent), var(--warm-earth));
+      }
+      .prob-bar.danger {
+        background: linear-gradient(90deg, var(--sienna-soft), var(--danger));
+      }
+
+      .prob-labels {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
+        color: var(--text-light);
+        margin-top: 5px;
+      }
+      .prob-value {
+        font-family: 'DM Mono', monospace;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--accent);
+      }
+      .prob-value.danger {
+        color: var(--danger);
+      }
+
+      .result-placeholder {
+        color: var(--text-light);
+        font-size: 13px;
+        line-height: 1.7;
+        text-align: center;
+      }
+      .result-placeholder .icon {
+        font-size: 38px;
+        margin-bottom: 8px;
+        display: block;
+        opacity: 0.35;
+      }
+
+      /* ── METRICS CARD ── */
+      .metrics-list {
+        display: flex;
+        flex-direction: column;
+      }
+      .metric-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 12px;
+      }
+      .metric-row:last-child {
+        border-bottom: none;
+      }
+      .metric-name {
+        color: var(--text-mid);
+        width: 80px;
+        flex-shrink: 0;
+      }
+      .metric-val {
+        font-family: 'DM Mono', monospace;
+        font-weight: 500;
+        font-size: 12px;
+        width: 44px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+      .metric-bar {
+        flex: 1;
+        margin: 0 10px;
+        height: 4px;
+        background: var(--cream-dark);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+      .metric-fill {
+        height: 100%;
+        border-radius: 100px;
+        background: var(--accent);
+        transition: width 0.6s ease;
+      }
+
+      /* ── BOTTOM TABLE ── */
+      .table-section {
+        margin-top: 22px;
+        animation: fadeUp 0.5s 0.35s ease both;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      thead th {
+        background: var(--cream);
+        padding: 11px 16px;
+        text-align: left;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-mid);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--cream-dark);
+        transition: background 0.15s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: var(--cream);
+      }
+      tbody td {
+        padding: 11px 16px;
+      }
+      .td-model {
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .td-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
+        font-weight: 500;
+      }
+      .td-badge.best {
+        background: rgba(106, 138, 90, 0.12);
+        color: var(--success);
+      }
+      .td-badge.good {
+        background: rgba(201, 169, 110, 0.15);
+        color: var(--warm-earth);
+      }
+      .td-badge.normal {
+        background: var(--cream-dark);
+        color: var(--text-light);
+      }
+      .highlight-row {
+        background: rgba(201, 169, 110, 0.06);
+      }
+
+      /* ── SPINNER ── */
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(245, 242, 236, 0.25);
+        border-top-color: var(--cream);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── TOAST ── */
+      #toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        background: var(--text-dark);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--cream);
+        padding: 11px 22px;
+        border-radius: 100px;
+        font-size: 13px;
+        opacity: 0;
+        transition: all 0.28s ease;
+        z-index: 100;
+        pointer-events: none;
+        white-space: nowrap;
+        box-shadow: var(--shadow-lg);
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* ── DISCLAIMER ── */
+      .disclaimer {
+        font-size: 11px;
+        color: var(--text-light);
+        text-align: center;
+        margin-top: 12px;
+        line-height: 1.6;
+        padding: 10px 14px;
+        background: rgba(201, 169, 110, 0.07);
+        border: 1px solid rgba(201, 169, 110, 0.18);
+        border-radius: var(--radius-sm);
+      }
+
+      /* ── DIVIDER ── */
+      .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--text-light);
+        font-size: 10px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-family: 'DM Mono', monospace;
+        margin: 6px 0 16px;
+      }
+      .section-divider::before,
+      .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- HEADER -->
+      <header>
+        <div class="header-inner">
+          <div class="header-left">
+            <div class="header-badge">Live · ML Inference Engine</div>
+            <h1>Diabetes <em>AI</em><br />Prediction System</h1>
+            <p class="header-sub">
+              5 model ML · SMOTE + GridSearchCV · Threshold-tuned for Recall ≥
+              85%
+            </p>
+          </div>
+
+          <!-- DATASET MODE TOGGLE -->
+          <div class="mode-toggle-wrap">
+            <span class="mode-label">Dataset Mode</span>
+            <div class="mode-toggle">
+              <button
+                class="mode-btn active"
+                id="modeV1"
+                onclick="switchMode('v1')"
+              >
+                <span class="mode-dot"></span>
+                Dataset 1
+                <span class="mode-badge v1">PIMA</span>
+              </button>
+              <button class="mode-btn" id="modeV2" onclick="switchMode('v2')">
+                <span class="mode-dot"></span>
+                Dataset 2
+                <span class="mode-badge v2">Gejala</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DATASET INFO STRIP -->
+      <div class="dataset-strip" id="datasetStrip">
+        <strong id="dsName">📂 PIMA Indian Diabetes</strong>
+        <span class="ds-sep">·</span>
+        <span id="dsDesc">768 sampel · 8 fitur medis numerik · models/</span>
+        <span class="ds-sep">·</span>
+        <span id="dsNote" style="color: var(--accent)"
+          >Train/Test split terpisah</span
+        >
+      </div>
+
+      <!-- TWO-COLUMN GRID -->
+      <div class="grid-layout">
+        <!-- LEFT: Input Form -->
+        <div>
+          <!-- Model Selector -->
+          <div class="card" style="margin-bottom: 20px">
+            <div class="card-header">
+              <div class="card-header-icon">🧠</div>
+              <div>
+                <h2>Pilih Model</h2>
+                <span>Model aktif akan dipakai untuk prediksi</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="model-grid" id="modelGrid">
+                <div
+                  style="
+                    grid-column: 1/-1;
+                    text-align: center;
+                    color: var(--text-light);
+                    font-size: 12px;
+                    padding: 16px 0;
+                  "
+                >
+                  Memuat model...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Form -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-icon">📋</div>
+              <div>
+                <h2>Data Pasien</h2>
+                <span id="formSubtitle"
+                  >Masukkan data medis untuk diprediksi</span
+                >
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-grid" id="formGrid">
+                <!-- Populated by JS -->
+              </div>
+              <button class="btn-predict" id="btnPredict" onclick="predict()">
+                Analisis &amp; Prediksi
+              </button>
+              <p class="disclaimer">
+                ⚠️ Hasil ini hanya untuk keperluan akademis. Bukan pengganti
+                diagnosis medis profesional.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Result + Metrics -->
+        <div class="result-section">
+          <!-- Result Display -->
+          <div class="result-display" id="resultDisplay">
+            <span class="result-placeholder">
+              <span class="icon">🔬</span>
+              Isi data pasien dan klik <strong>Analisis &amp; Prediksi</strong
+              ><br />
+              untuk melihat hasil diagnosis.
+            </span>
+          </div>
+
+          <!-- Model Metrics -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-icon">📊</div>
+              <div>
+                <h2>Metrik Model Aktif</h2>
+                <span id="activeModelName">—</span>
+              </div>
+            </div>
+            <div
+              class="card-body"
+              style="padding-top: 8px; padding-bottom: 8px"
+            >
+              <div class="metrics-list" id="metricsList">
+                <div
+                  style="
+                    color: var(--text-light);
+                    font-size: 13px;
+                    padding: 12px 0;
+                    text-align: center;
+                  "
+                >
+                  Pilih model untuk melihat metrik
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPARISON TABLE -->
+      <div class="table-section">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon">🏆</div>
+            <div>
+              <h2>Perbandingan Semua Model</h2>
+              <span id="tableSubtitle"
+                >Sorted by F1-Score · Recall target ≥ 85%</span
+              >
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Threshold</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-Score</th>
+                    <th>ROC-AUC</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody">
+                  <tr>
+                    <td
+                      colspan="8"
+                      style="
+                        text-align: center;
+                        color: var(--text-light);
+                        padding: 24px;
+                      "
+                    >
+                      Loading data model...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="toast"></div>
+
+    <script>
+      // ── State ────────────────────────────────────────────────────────────
+      let modelsData = [];
+      let featuresData = [];
+      let activeModel = '';
+      let currentMode = 'v1'; // 'v1' = PIMA, 'v2' = Gejala
+
+      // ── Dataset config ───────────────────────────────────────────────────
+      const DATASET_CONFIG = {
+        v1: {
+          name: '📂 PIMA Indian Diabetes',
+          desc: '768 sampel · 8 fitur medis numerik · models/',
+          note: 'Train/Test split terpisah',
+          formSubtitle: 'Masukkan data medis (nilai lab) untuk diprediksi',
+          tableNote:
+            'Dataset 1 (PIMA) · Sorted by F1-Score · Recall target ≥ 85%',
+          apiModels: '/api/models',
+          apiFeatures: '/api/features',
+          apiPredict: '/api/predict',
+        },
+        v2: {
+          name: '📂 Early Symptom Diabetes (UCI)',
+          desc: '520 sampel · 16 fitur gejala klinis · models_2/',
+          note: 'Train/Test split 80:20 stratified',
+          formSubtitle: 'Masukkan data gejala klinis untuk diprediksi',
+          tableNote:
+            'Dataset 2 (Gejala) · Sorted by F1-Score · Recall target ≥ 85%',
+          apiModels: '/api/models2',
+          apiFeatures: '/api/features2',
+          apiPredict: '/api/predict2',
+        },
+      };
+
+      // ── Switch mode ──────────────────────────────────────────────────────
+      function switchMode(mode) {
+        if (mode === currentMode) return;
+        currentMode = mode;
+
+        document
+          .getElementById('modeV1')
+          .classList.toggle('active', mode === 'v1');
+        document
+          .getElementById('modeV2')
+          .classList.toggle('active', mode === 'v2');
+
+        const cfg = DATASET_CONFIG[mode];
+        document.getElementById('dsName').textContent = cfg.name;
+        document.getElementById('dsDesc').textContent = cfg.desc;
+        document.getElementById('dsNote').textContent = cfg.note;
+        document.getElementById('formSubtitle').textContent = cfg.formSubtitle;
+        document.getElementById('tableSubtitle').textContent = cfg.tableNote;
+
+        // Reset result
+        const box = document.getElementById('resultDisplay');
+        box.className = 'result-display';
+        box.innerHTML = `<span class="result-placeholder"><span class="icon">🔬</span>Isi data pasien dan klik <strong>Analisis &amp; Prediksi</strong><br>untuk melihat hasil diagnosis.</span>`;
+
+        // Reset metrics
+        document.getElementById('metricsList').innerHTML =
+          '<div style="color:var(--text-light);font-size:13px;padding:12px 0;text-align:center;">Pilih model untuk melihat metrik</div>';
+        document.getElementById('activeModelName').textContent = '—';
+
+        modelsData = [];
+        featuresData = [];
+        activeModel = '';
+
+        loadModels();
+        loadFeatures();
+      }
+
+      // ── Fetch model list ─────────────────────────────────────────────────
+      async function loadModels() {
+        const url = DATASET_CONFIG[currentMode].apiModels;
+        try {
+          const res = await fetch(url);
+          modelsData = await res.json();
+          if (!Array.isArray(modelsData) || modelsData.error)
+            throw new Error(modelsData.error || 'Bad response');
+          modelsData.sort((a, b) => b.f1 - a.f1);
+          if (!activeModel && modelsData.length)
+            activeModel = modelsData[0].name;
+          renderModelGrid();
+          //renderTable();
+          setActiveModel(activeModel);
+        } catch (e) {
+          console.error('Load models failed:', e);
+          document.getElementById('modelGrid').innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;color:var(--danger);font-size:12px;padding:16px 0;">⚠️ Gagal memuat model dari server</div>`;
+        }
+      }
+
+      // ── Fetch feature config ─────────────────────────────────────────────
+      async function loadFeatures() {
+        const url = DATASET_CONFIG[currentMode].apiFeatures;
+        try {
+          const res = await fetch(url);
+          featuresData = await res.json();
+          renderForm();
+        } catch (e) {
+          console.error('Load features failed:', e);
+        }
+      }
+
+      // ── Render model selector ────────────────────────────────────────────
+      function renderModelGrid() {
+        const grid = document.getElementById('modelGrid');
+        grid.innerHTML = '';
+        modelsData.forEach((m) => {
+          const btn = document.createElement('button');
+          btn.className =
+            'model-btn' + (m.name === activeModel ? ' active' : '');
+          btn.dataset.name = m.name;
+          // Strip _2 suffix for display
+          const displayName = m.name.replace(/_2$/, '').replace(/_/g, ' ');
+          btn.innerHTML = `${displayName}<span class="model-score">F1 ${(m.f1 * 100).toFixed(1)}%</span>`;
+          btn.onclick = () => setActiveModel(m.name);
+          grid.appendChild(btn);
+        });
+      }
+
+      function setActiveModel(name) {
+        activeModel = name;
+        document.querySelectorAll('.model-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.name === name);
+        });
+        renderMetrics(name);
+        // Display name without _2
+        const dn = name.replace(/_2$/, '').replace(/_/g, ' ');
+        document.getElementById('activeModelName').textContent = dn;
+      }
+
+      // ── Render metrics ───────────────────────────────────────────────────
+      function renderMetrics(name) {
+        const m = modelsData.find((x) => x.name === name);
+        if (!m) return;
+        const keys = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc'];
+        const labels = {
+          accuracy: 'Accuracy',
+          precision: 'Precision',
+          recall: 'Recall',
+          f1: 'F1-Score',
+          roc_auc: 'ROC-AUC',
+        };
+        const html =
+          keys
+            .map((k) => {
+              const v = m[k];
+              const pct = (v * 100).toFixed(1);
+              const color =
+                k === 'recall'
+                  ? v >= 0.85
+                    ? 'var(--success)'
+                    : 'var(--danger)'
+                  : 'var(--accent)';
+              return `
+      <div class="metric-row">
+        <span class="metric-name">${labels[k]}</span>
+        <div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="metric-val" style="color:${color}">${pct}%</span>
+      </div>`;
+            })
+            .join('') +
+          `
+    <div class="metric-row">
+      <span class="metric-name">Threshold</span>
+      <div class="metric-bar"><div class="metric-fill" style="width:${m.threshold * 100}%;background:var(--warm-earth)"></div></div>
+      <span class="metric-val" style="color:var(--warm-earth)">${m.threshold}</span>
+    </div>`;
+        document.getElementById('metricsList').innerHTML = html;
+      }
+
+      // ── Render form ──────────────────────────────────────────────────────
+      function renderForm() {
+        const grid = document.getElementById('formGrid');
+        grid.innerHTML = '';
+        featuresData.forEach((f) => {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          if (f.type === 'select') {
+            // Gender field (v2)
+            const opts = (f.options || [])
+              .map((o) => `<option value="${o}">${o}</option>`)
+              .join('');
+            div.innerHTML = `
+        <label>${f.label}</label>
+        <select id="feat_${f.name}" name="${f.name}">
+          <option value="" disabled selected>— Pilih —</option>
+          ${opts}
+        </select>`;
+          } else {
+            div.innerHTML = `
+        <label>${f.label} <span class="unit-label">${f.unit ? '(' + f.unit + ')' : ''}</span></label>
+        <input type="number" id="feat_${f.name}" name="${f.name}"
+          min="${f.min}" max="${f.max}" step="${f.step}"
+          placeholder="e.g. ${((f.min + f.max) / 2).toFixed(f.step < 1 ? 1 : 0)} | range [${f.min}–${f.max}]"
+          oninput="clampInput(this,${f.min},${f.max})"
+        />`;
+          }
+          grid.appendChild(div);
+        });
+      }
+
+      function clampInput(el, min, max) {
+        const v = parseFloat(el.value);
+        if (!isNaN(v)) {
+          if (v < min) el.value = min;
+          if (v > max) el.value = max;
+        }
+      }
+
+      // ── Render table ─────────────────────────────────────────────────────
+      function renderForm() {
+        const grid = document.getElementById('formGrid');
+        grid.innerHTML = '';
+        featuresData.forEach((f) => {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          if (f.type === 'select') {
+            const opts = (f.options || [])
+              .map((o) => `<option value="${o}">${o}</option>`)
+              .join('');
+            div.innerHTML = `
+              <label>${f.label}</label>
+              <select id="feat_${f.name}" name="${f.name}">
+                <option value="" disabled selected>— Pilih —</option>
+                ${opts}
+              </select>`;
+          } else {
+            div.innerHTML = `
+              <label>${f.label} <span class="unit-label">${f.unit ? '(' + f.unit + ')' : ''}</span></label>
+              <input type="number" id="feat_${f.name}" name="${f.name}"
+                min="${f.min}" max="${f.max}" step="${f.step}"
+                placeholder="e.g. ${((f.min + f.max) / 2).toFixed(f.step < 1 ? 1 : 0)} | range [${f.min}–${f.max}]"
+                onblur="clampInput(this,${f.min},${f.max})"
+              />`;
+          }
+          grid.appendChild(div);
+        });
+      }
+
+      // ── Predict ──────────────────────────────────────────────────────────
+      async function predict() {
+        const features = {};
+        let missing = [];
+        for (const f of featuresData) {
+          const el = document.getElementById('feat_' + f.name);
+          if (!el) continue;
+          const v = el.value.trim();
+          if (v === '' || v === undefined) {
+            missing.push(f.label);
+            continue;
+          }
+          features[f.name] = f.type === 'select' ? v : parseFloat(v);
+        }
+
+        if (missing.length > 0) {
+          showToast(
+            `⚠️ Lengkapi: ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '...' : ''}`,
+          );
+          return;
+        }
+
+        const btn = document.getElementById('btnPredict');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Menganalisis...';
+
+        try {
+          const url = DATASET_CONFIG[currentMode].apiPredict;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: activeModel, features }),
+          });
+          const data = await res.json();
+          if (data.error) {
+            showToast('❌ ' + data.error);
+            return;
+          }
+          renderResult(data);
+        } catch (e) {
+          showToast('❌ Gagal koneksi ke server');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = 'Analisis &amp; Prediksi';
+        }
+      }
+
+      function renderResult(data) {
+        const isDiabetes = data.prediction === 1;
+        const pct = (data.probability * 100).toFixed(1);
+        const box = document.getElementById('resultDisplay');
+        const dn = (data.model || activeModel)
+          .replace(/_2$/, '')
+          .replace(/_/g, ' ');
+        const ds =
+          currentMode === 'v1' ? 'Dataset 1 (PIMA)' : 'Dataset 2 (Gejala)';
+
+        box.className =
+          'result-display ' + (isDiabetes ? 'diabetes' : 'healthy');
+        box.innerHTML = `
+    <div class="result-icon">${isDiabetes ? '🔴' : '🟢'}</div>
+    <div class="result-label ${isDiabetes ? 'red' : 'green'}">${data.label}</div>
+    <div class="prob-value ${isDiabetes ? 'danger' : ''}">${pct}%</div>
+    <div style="width:100%;font-size:11px;color:var(--text-light);text-align:center;margin-bottom:4px">
+      Probabilitas Diabetes
+    </div>
+    <div class="prob-bar-wrap" style="width:100%">
+      <div class="prob-bar ${isDiabetes ? 'danger' : ''}" id="probBar" style="width:0%"></div>
+    </div>
+    <div class="prob-labels"><span>0%</span><span>Thr: ${data.threshold}</span><span>100%</span></div>
+    <div style="font-size:11px;color:var(--text-light);margin-top:10px;">
+      <strong style="color:var(--text-dark)">${dn}</strong> · ${ds} · Confidence <strong style="color:var(--accent)">${data.confidence}%</strong>
+    </div>`;
+
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            document.getElementById('probBar').style.width = pct + '%';
+          }, 50);
+        });
+      }
+
+      // ── Toast ─────────────────────────────────────────────────────────────
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+      }
+
+      // ── Init ──────────────────────────────────────────────────────────────
+      loadModels();
+      loadFeatures();
+    </script>
+  </body>
+</html>
