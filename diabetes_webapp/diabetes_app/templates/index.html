@@ -802,7 +802,7 @@
 
           <!-- DATASET MODE TOGGLE -->
           <div class="mode-toggle-wrap">
-            <span class="mode-label">Detection Mode</span>
+            <span class="mode-label">Dataset Mode</span>
             <div class="mode-toggle">
               <button
                 class="mode-btn active"
@@ -810,13 +810,13 @@
                 onclick="switchMode('v1')"
               >
                 <span class="mode-dot"></span>
-                Diabetes
-                <span class="mode-badge v1">V1</span>
+                Dataset 1
+                <span class="mode-badge v1">PIMA</span>
               </button>
               <button class="mode-btn" id="modeV2" onclick="switchMode('v2')">
                 <span class="mode-dot"></span>
-                Prediabetes
-                <span class="mode-badge v2">V2</span>
+                Dataset 2
+                <span class="mode-badge v2">Gejala</span>
               </button>
             </div>
           </div>
@@ -1064,43 +1064,13 @@
           if (!activeModel && modelsData.length)
             activeModel = modelsData[0].name;
           renderModelGrid();
-          renderTable();
+          //renderTable();
           setActiveModel(activeModel);
         } catch (e) {
           console.error('Load models failed:', e);
           document.getElementById('modelGrid').innerHTML =
             `<div style="grid-column:1/-1;text-align:center;color:var(--danger);font-size:12px;padding:16px 0;">⚠️ Gagal memuat model dari server</div>`;
         }
-      }
-
-      function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        if (!modelsData.length) return;
-
-        tbody.innerHTML = modelsData.map((m, i) => {
-          const isActive = m.name === activeModel;
-          const dn = m.name.replace(/_2$/, '').replace(/_/g, ' ');
-          const recallOk = m.recall >= 0.85;
-
-          let badge, badgeClass;
-          if (i === 0)          { badge = '🏆 Best';  badgeClass = 'best'; }
-          else if (m.f1 >= 0.75){ badge = '✓ Good';   badgeClass = 'good'; }
-          else                  { badge = 'Normal';   badgeClass = 'normal'; }
-
-          return `
-            <tr class="${isActive ? 'highlight-row' : ''}">
-              <td class="td-model">${dn}${isActive ? ' ●' : ''}</td>
-              <td style="font-family:'DM Mono',monospace;font-size:12px;">${m.threshold}</td>
-              <td style="font-family:'DM Mono',monospace;">${(m.accuracy  * 100).toFixed(1)}%</td>
-              <td style="font-family:'DM Mono',monospace;">${(m.precision * 100).toFixed(1)}%</td>
-              <td style="font-family:'DM Mono',monospace;color:${recallOk ? 'var(--success)' : 'var(--danger)'};">
-                ${(m.recall * 100).toFixed(1)}%
-              </td>
-              <td style="font-family:'DM Mono',monospace;font-weight:600;">${(m.f1      * 100).toFixed(1)}%</td>
-              <td style="font-family:'DM Mono',monospace;">${(m.roc_auc  * 100).toFixed(1)}%</td>
-              <td><span class="td-badge ${badgeClass}">${badge}</span></td>
-            </tr>`;
-        }).join('');
       }
 
       // ── Fetch feature config ─────────────────────────────────────────────
@@ -1138,7 +1108,6 @@
           b.classList.toggle('active', b.dataset.name === name);
         });
         renderMetrics(name);
-        renderTable();
         // Display name without _2
         const dn = name.replace(/_2$/, '').replace(/_/g, ' ');
         document.getElementById('activeModelName').textContent = dn;
@@ -1182,6 +1151,37 @@
       <span class="metric-val" style="color:var(--warm-earth)">${m.threshold}</span>
     </div>`;
         document.getElementById('metricsList').innerHTML = html;
+      }
+
+      // ── Render form ──────────────────────────────────────────────────────
+      function renderForm() {
+        const grid = document.getElementById('formGrid');
+        grid.innerHTML = '';
+        featuresData.forEach((f) => {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          if (f.type === 'select') {
+            // Gender field (v2)
+            const opts = (f.options || [])
+              .map((o) => `<option value="${o}">${o}</option>`)
+              .join('');
+            div.innerHTML = `
+        <label>${f.label}</label>
+        <select id="feat_${f.name}" name="${f.name}">
+          <option value="" disabled selected>— Pilih —</option>
+          ${opts}
+        </select>`;
+          } else {
+            div.innerHTML = `
+        <label>${f.label} <span class="unit-label">${f.unit ? '(' + f.unit + ')' : ''}</span></label>
+        <input type="number" id="feat_${f.name}" name="${f.name}"
+          min="${f.min}" max="${f.max}" step="${f.step}"
+          placeholder="e.g. ${((f.min + f.max) / 2).toFixed(f.step < 1 ? 1 : 0)} | range [${f.min}–${f.max}]"
+          oninput="clampInput(this,${f.min},${f.max})"
+        />`;
+          }
+          grid.appendChild(div);
+        });
       }
 
       function clampInput(el, min, max) {
