@@ -1064,7 +1064,7 @@
           if (!activeModel && modelsData.length)
             activeModel = modelsData[0].name;
           renderModelGrid();
-          //renderTable();
+          renderTable();
           setActiveModel(activeModel);
         } catch (e) {
           console.error('Load models failed:', e);
@@ -1153,37 +1153,6 @@
         document.getElementById('metricsList').innerHTML = html;
       }
 
-      // ── Render form ──────────────────────────────────────────────────────
-      function renderForm() {
-        const grid = document.getElementById('formGrid');
-        grid.innerHTML = '';
-        featuresData.forEach((f) => {
-          const div = document.createElement('div');
-          div.className = 'form-group';
-          if (f.type === 'select') {
-            // Gender field (v2)
-            const opts = (f.options || [])
-              .map((o) => `<option value="${o}">${o}</option>`)
-              .join('');
-            div.innerHTML = `
-        <label>${f.label}</label>
-        <select id="feat_${f.name}" name="${f.name}">
-          <option value="" disabled selected>— Pilih —</option>
-          ${opts}
-        </select>`;
-          } else {
-            div.innerHTML = `
-        <label>${f.label} <span class="unit-label">${f.unit ? '(' + f.unit + ')' : ''}</span></label>
-        <input type="number" id="feat_${f.name}" name="${f.name}"
-          min="${f.min}" max="${f.max}" step="${f.step}"
-          placeholder="e.g. ${((f.min + f.max) / 2).toFixed(f.step < 1 ? 1 : 0)} | range [${f.min}–${f.max}]"
-          oninput="clampInput(this,${f.min},${f.max})"
-        />`;
-          }
-          grid.appendChild(div);
-        });
-      }
-
       function clampInput(el, min, max) {
         const v = parseFloat(el.value);
         if (!isNaN(v)) {
@@ -1221,6 +1190,36 @@
           grid.appendChild(div);
         });
       }
+
+        function renderTable() {
+          const tbody = document.getElementById('tableBody');
+          if (!modelsData.length) return;
+
+          tbody.innerHTML = modelsData.map((m, i) => {
+            const isActive = m.name === activeModel;
+            const dn = m.name.replace(/_2$/, '').replace(/_/g, ' ');
+            const recallOk = m.recall >= 0.85;
+
+            let badge, badgeClass;
+            if (i === 0)          { badge = '🏆 Best';  badgeClass = 'best'; }
+            else if (m.f1 >= 0.75){ badge = '✓ Good';   badgeClass = 'good'; }
+            else                  { badge = 'Normal';   badgeClass = 'normal'; }
+
+            return `
+              <tr class="${isActive ? 'highlight-row' : ''}">
+                <td class="td-model">${dn}${isActive ? ' ●' : ''}</td>
+                <td style="font-family:'DM Mono',monospace;font-size:12px;">${m.threshold}</td>
+                <td style="font-family:'DM Mono',monospace;">${(m.accuracy  * 100).toFixed(1)}%</td>
+                <td style="font-family:'DM Mono',monospace;">${(m.precision * 100).toFixed(1)}%</td>
+                <td style="font-family:'DM Mono',monospace;color:${recallOk ? 'var(--success)' : 'var(--danger)'};">
+                  ${(m.recall * 100).toFixed(1)}%
+                </td>
+                <td style="font-family:'DM Mono',monospace;font-weight:600;">${(m.f1      * 100).toFixed(1)}%</td>
+                <td style="font-family:'DM Mono',monospace;">${(m.roc_auc  * 100).toFixed(1)}%</td>
+                <td><span class="td-badge ${badgeClass}">${badge}</span></td>
+              </tr>`;
+          }).join('');
+        }
 
       // ── Predict ──────────────────────────────────────────────────────────
       async function predict() {
