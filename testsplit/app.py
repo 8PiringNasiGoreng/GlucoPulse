@@ -16,7 +16,7 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 # ══════════════════════════════════════════════════════════════════════
 # ── DATASET — PIMA (models/) ──────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════
-MODELS_DIR = "models"
+MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 
 with open(f"{MODELS_DIR}/metadata.json") as f:
     metadata = json.load(f)
